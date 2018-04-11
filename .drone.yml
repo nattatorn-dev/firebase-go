@@ -1,0 +1,35 @@
+workspace:
+  base: /go
+  path: src/github.com/nattatorn-dev/log-manager
+
+pipeline:
+  build:
+    image: golang:1.9
+
+    environment:
+    - JWT_SECRET=test
+
+    commands:
+    - go get
+    - go build
+    - go test ./... -v
+
+  publish:
+    image: plugins/docker
+    repo: nattatorn-dev/log-manager
+    when:
+      branch: master
+    secrets: [ docker_username, docker_password ]
+    tags: 
+      - latest
+  rancher:
+    image: peloton/drone-rancher
+    url: https://rancher.nattatorn-dev.com
+    secrets: [ rancher_access_key, rancher_secret_key ]
+    service: example/go
+    docker_image: nattatorn-dev/log-manager:latest
+    confirm: true
+    timeout: 240
+services:
+  mongo:
+    image: mongo
