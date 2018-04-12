@@ -11,14 +11,22 @@ const cNameTasks = "tasks"
 
 type (
 	Task struct {
-		Id          bson.ObjectId `bson:"_id,omitempty" json:"id"`
-		UserId      bson.ObjectId `bson:"userid" json:"userid"`
-		Name        string        `json:"name"`
-		Description string        `json:"description"`
-		CreatedOn   time.Time     `json:"createdon,omitempty"`
-		Due         time.Time     `json:"due,omitempty"`
-		Status      string        `json:"status,omitempty"`
-		Tags        []string      `json:"tags,omitempty"`
+		Id     bson.ObjectId `bson:"_id,omitempty" json:"id"`
+		UserId bson.ObjectId `bson:"userid" json:"userid"`
+		// ProjectId   bson.ObjectId `bson:"projectid" json:"projectid"`
+		Name         string      `json:"name"`
+		Type         string      `json:"type"`
+		Description  string      `json:"description,omitempty"`
+		Action       string      `json:"action,omitempty"`
+		Payload      interface{} `json:"payload,omitempty"`
+		State        interface{} `json:"state,omitempty"`
+		URL          string      `json:"url,omitempty"`
+		Priority     int8        `json:"priority"`
+		Version      int8        `json:"version,omitempty"`
+		CreatedDate  time.Time   `json:"created_date"`
+		ModifiedDate time.Time   `json:"modified_date"`
+		Status       int8        `json:"status"`
+		Tags         []string    `json:"tags,omitempty"`
 	}
 	TaskStore interface {
 		GetAllTasksByUserId(bson.ObjectId) ([]Task, error)
@@ -51,7 +59,8 @@ func (d *DataStore) GetTaskByUserIdAndTaskId(userId bson.ObjectId, taskId bson.O
 }
 
 func (d *DataStore) CreateTask(task Task) (Task, error) {
-	task.CreatedOn = time.Now()
+	task.CreatedDate = time.Now()
+	task.ModifiedDate = time.Now()
 	task.Id = bson.NewObjectId()
 	err := d.C(cNameTasks).Insert(task)
 	if err != nil {
@@ -78,11 +87,11 @@ func (d *DataStore) UpdateTaskByUserIdAndTaskID(newTask Task, userId bson.Object
 
 	err := d.C(cNameTasks).Update(bson.M{"userid": userId, "_id": taskId},
 		bson.M{"$set": bson.M{
-			"name":        newTask.Name,
-			"description": newTask.Description,
-			"due":         newTask.Due,
-			"status":      newTask.Status,
-			"tags":        newTask.Tags,
+			"name":          newTask.Name,
+			"description":   newTask.Description,
+			"modified_date": newTask.ModifiedDate,
+			"status":        newTask.Status,
+			"tags":          newTask.Tags,
 		}})
 	if err != nil {
 		return Task{}, err

@@ -19,6 +19,7 @@ type CreatedUser struct {
 func Register(authMod common.Authorizer, d models.UserStore, w http.ResponseWriter, r *http.Request) {
 
 	//get data from request
+
 	decoder := json.NewDecoder(r.Body)
 	body := models.User{}
 	err := decoder.Decode(&body)
